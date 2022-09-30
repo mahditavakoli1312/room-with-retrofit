@@ -9,9 +9,12 @@ import android.widget.ArrayAdapter
 import android.widget.ListView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.roomwithretrofit.R
+import com.example.roomwithretrofit.databinding.FragmentUserFragmentBinding
 import com.example.roomwithretrofit.feature.user.ui.UserFragmentState
 import com.example.roomwithretrofit.feature.user.ui.viewModel.UserViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,13 +23,20 @@ import dagger.hilt.android.AndroidEntryPoint
 class UserFragmentFragment : Fragment() {
 
     private val userViewModel: UserViewModel by viewModels()
+    private lateinit var binding : FragmentUserFragmentBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        binding = DataBindingUtil.inflate(
+            layoutInflater,
+            R.layout.fragment_user_fragment,
+            container,
+            false
+        )
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_user_fragment, container, false)
+        return binding.root
     }
 
     @SuppressLint("SetTextI18n")
@@ -35,6 +45,14 @@ class UserFragmentFragment : Fragment() {
 
         val fragmentStateTV = view.findViewById<TextView>(R.id.tv_fragmentState_UserFragmen)
         val mListView = view.findViewById<ListView>(R.id.lv_usersList_userFragment)
+
+        binding.apply {
+            srlRefreshUserFragment.setOnRefreshListener {
+                userViewModel.fetchUers()
+                srlRefreshUserFragment.setRefreshing(false);
+
+            }
+        }
         userViewModel.users.observe(viewLifecycleOwner) {
             val users = it?.map {
                 "${it.firstName} ${it.lastName}"
